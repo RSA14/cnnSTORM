@@ -82,7 +82,7 @@ def get_emitter_data(image, points, bound=16, normalise=True):
     :param normalise: Normalise image 0-1
     :return: Array of (bound, bound) PSFs of each emitter and corresponding z-position
     """
-    image_data = np.zeros((1, bound, bound))  # Store cut images
+    image_data = np.zeros((1, bound*2, bound*2))  # Store cut images
     z_data = np.zeros(1)  # Store corresponding z-position
 
     # Check if emitters are near edge of image so PSF cannot be cropped properly
