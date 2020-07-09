@@ -1,32 +1,33 @@
-from tensorflow import keras
-from keras.datasets import mnist
+import numpy as np
 import matplotlib.pyplot as plt
-from keras.utils import to_categorical
-from keras.models import Sequential
-from keras.layers import Dense, Conv2D, Flatten
+from models import conv_1
+import trainer
+import data_processing
+# from generate_data import X_train, y_train
+import keras
+
+# Run generate_data first to get cached image data + z-positions
+X_train, y_train = data_processing.generate_STORM_data('ThunderSTORM/Simulated/LowDensity',
+                                                       samples=500)
 
 
-(X_train, y_train), (X_test, y_test) = mnist.load_data()
+# Rescale z-pos
+y_train_norm, mean, sd = data_processing.scale_zpos(y_train)
+print(X_train.shape)
 
-plt.imshow(X_train[0])
+history = trainer.train_model(conv_1, x_train=X_train, y_train=y_train_norm,
+                              optimizer=keras.optimizers.Adam(),
+                              loss='mse', metrics=['mse'], validation_split=0.2,
+                              epochs=10, batch_size=32)
+
+records = trainer.get_metrics(history, show_plot=True)
+print(records)
+
+# print(history.history.keys())
+# plt.plot(history.history['loss'])
+# plt.plot(history.history['val_loss'])
+# plt.title('Model loss')
+# plt.ylabel('loss')
+# plt.xlabel('epoch')
+# plt.legend(['train', 'test'], loc='upper left')
 # plt.show()
-
-X_train = X_train.reshape(60000, 28, 28, 1)
-X_test = X_test.reshape(10000, 28, 28, 1)
-
-#one-hot encode target column
-y_train = to_categorical(y_train)
-y_test = to_categorical(y_test)
-
-#create model
-model = Sequential()
-#add model layers
-model.add(Conv2D(64, kernel_size=3, activation='relu', input_shape=(28,28,1)))
-model.add(Conv2D(32, kernel_size=3, activation='relu'))
-model.add(Flatten())
-model.add(Dense(10, activation='softmax'))
-
-#compile model using accuracy to measure model performance
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-
-model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=3)

@@ -23,7 +23,7 @@ def convert_to_8bit(image):  # Convert from 16-bit to 8-bit
     return converted_image
 
 
-def cut_image(image, center: tuple, width=(16, 16), show=False):
+def cut_image(image, center, width=(16, 16), show=False):
     """
 
     :param image: numpy array representing image
@@ -51,6 +51,7 @@ def cut_image(image, center: tuple, width=(16, 16), show=False):
 
 def filter_points(points, bound=16):
     """
+    Filters emitters using list of emitter locations and a boundary
 
     :param points: pixel locations of emitters
     :param bound: Exclusion boundary around any emitter
@@ -70,8 +71,18 @@ def filter_points(points, bound=16):
     return points.drop(rejected_points)
 
 
-def get_emitter_data(image, points, bound=16):
-    image_data = np.zeros((1, 32, 32))  # Store cut images
+def get_emitter_data(image, points, bound=16, normalise=True):
+    """
+    Cuts out the (bound, bound) shape around filtered emitters given by points,
+    normalise will normalise the final image to 0-1. Can probably combine with filter points
+
+    :param image: Full image of all emitters
+    :param points: Filtered list of emitters
+    :param bound: Exclusion zone
+    :param normalise: Normalise image 0-1
+    :return: Array of (bound, bound) PSFs of each emitter and corresponding z-position
+    """
+    image_data = np.zeros((1, bound, bound))  # Store cut images
     z_data = np.zeros(1)  # Store corresponding z-position
 
     # Check if emitters are near edge of image so PSF cannot be cropped properly
@@ -85,8 +96,8 @@ def get_emitter_data(image, points, bound=16):
         psf = cut_image(image,
                         (points["x"][i], points["y"][i]),
                         width=(bound, bound))
-
-        # psf = normalise_image(psf)  # Normalise image 0-1 as is common
+        if normalise:
+            psf = normalise_image(psf)  # Normalise image 0-1 as is common
         z_position = points["z"][i]  # Corresponding z-pos
 
         # Append to respective arrays
@@ -98,11 +109,5 @@ def get_emitter_data(image, points, bound=16):
     z_data = np.delete(z_data, 0)
 
     return image_data, z_data
-
-
-# image = io.imread('ThunderSTORM/Simulated/LowDensity/1.tif')
-# truth = pd.read_csv('ThunderSTORM/Simulated/LowDensity/1.csv')
-
-
 
 
