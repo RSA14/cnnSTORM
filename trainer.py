@@ -25,7 +25,7 @@ def get_metrics(history, show_plot = False):
 
     records = pd.DataFrame({"last_val_loss": last_val_loss,
                             "best_val_loss": best_val_loss,
-                            "best_epoch": epoch}, index=[0])
+                            "best_epoch": epoch+1}, index=[0])
 
     if show_plot:
         plt.plot(history.history['loss'])
@@ -33,7 +33,8 @@ def get_metrics(history, show_plot = False):
         plt.title('Model Loss')
         plt.ylabel('Loss (MSE)')
         plt.xlabel('Epoch')
-        plt.legend(['Train', 'Test'], loc='upper left')
+        plt.legend(['Train', 'Validation'], loc='upper left')
         plt.show()
 
     return records
+
