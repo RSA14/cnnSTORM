@@ -53,7 +53,7 @@ conv_1.add(layers.Dense(1))
 def create_CNN(conv, batch_norm, activation, pooling, dense, dropout,
                dense_activation=None, input_shape=(32, 32, 1), output_shape=1,
                global_avg_pool=True, filter_size=3,
-               show_summary=False, plot_model=False):
+               show_summary=False):
     """
     Constructs a CNN using repeated blocks of: Conv2D -> BatchNorm -> Activation -> Pooling
     FCN layer block constructed using dense layer -> dense activation -> dropout (if present)
@@ -71,7 +71,6 @@ def create_CNN(conv, batch_norm, activation, pooling, dense, dropout,
     :param global_avg_pool: Boolean indicating whether to use global avg pooling at the end before dense
     :param filter_size: Convolution kernel size, usually fixed to 3
     :param show_summary: Displays model summary
-    :param plot_model: Plots model using graphviz, good for visualisation.
     :return: CNN model object
     """
     if dense is None:
@@ -125,10 +124,14 @@ def create_CNN(conv, batch_norm, activation, pooling, dense, dropout,
 
     if show_summary:
         cnn_model.summary()
-    if plot_model:
-        keras.utils.plot_model(cnn_model, show_shapes=True)
 
     return cnn_model
+
+conv_1 = create_CNN(conv = [64,32,16], batch_norm = [1,1,1],
+                           activation = ['prelu', 'prelu', 'prelu'],
+                          pooling = [2,2,None], dense=[128,64,32],
+                           dense_activation=None, dropout = [0.2,0.2,0.2],
+                           filter_size = 3, show_summary = True)
 
 
 # Resnet Test
