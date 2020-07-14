@@ -114,7 +114,8 @@ def create_CNN(conv, batch_norm, activation, pooling, dense, dropout,
     model = layers.Flatten()(model)
 
     for i in range(len(dense)):
-        model = layers.Dense(dense[i], activation=dense_activation)(model)
+        if dense[i] is not None:
+            model = layers.Dense(dense[i], activation=dense_activation)(model)
         if dropout[i] is not None:
             model = layers.Dropout(dropout[i])(model)
 
