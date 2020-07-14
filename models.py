@@ -51,9 +51,9 @@ conv_1.add(layers.Dense(1))
 # General CNN generator
 
 def create_CNN(conv, batch_norm, activation, pooling, dense, dropout,
-               dense_activation=None, input_shape=(32, 32, 1), output_shape = 1,
+               dense_activation=None, input_shape=(32, 32, 1), output_shape=1,
                global_avg_pool=True, filter_size=3,
-               show_summary=False, plot_model = False):
+               show_summary=False, plot_model=False):
     """
     Constructs a CNN using repeated blocks of: Conv2D -> BatchNorm -> Activation -> Pooling
     FCN layer block constructed using dense layer -> dense activation -> dropout (if present)
@@ -115,9 +115,9 @@ def create_CNN(conv, batch_norm, activation, pooling, dense, dropout,
     model = layers.Flatten()(model)
 
     for i in range(len(dense)):
-        model = layers.Dense(dense[i], activation=dense_activation)
+        model = layers.Dense(dense[i], activation=dense_activation)(model)
         if dropout[i] is not None:
-            model = layers.Dropout(dropout[i])
+            model = layers.Dropout(dropout[i])(model)
 
     outputs = layers.Dense(output_shape)(model)
 
