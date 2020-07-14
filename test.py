@@ -19,7 +19,7 @@ X_train, y_train = data_processing.process_MATLAB_data('PSF_ast.mat', 'Zpos_ast.
 print(X_train.shape)
 
 history = trainer.train_model(conv_test, x_train=X_train, y_train=y_train,
-                              optimizer=keras.optimizers.Adam(learning_rate=0.0005),
+                              optimizer=keras.optimizers.Adam(learning_rate=0.01),
                               loss='mse', metrics=['mse'], validation_split=0.2,
                               epochs=20, batch_size=32, summary=False)
 
