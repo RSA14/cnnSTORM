@@ -8,14 +8,14 @@ from keras.layers import Conv2D, Flatten, Dense, Add
 # Basic dense
 densemodel = Sequential()
 densemodel.add(Flatten())
-densemodel.add(Dense(256, activation='tanh'))
-# densemodel.add(layers.PReLU())
-densemodel.add(Dense(128, activation='tanh'))
-# densemodel.add(layers.PReLU())
-densemodel.add(Dense(64, activation='tanh'))
-# densemodel.add(layers.PReLU())
-densemodel.add(Dense(32, activation='tanh'))
-# densemodel.add(layers.PReLU())
+densemodel.add(Dense(256, activation=None))
+densemodel.add(layers.PReLU())
+densemodel.add(Dense(128, activation=None))
+densemodel.add(layers.PReLU())
+densemodel.add(Dense(64, activation=None))
+densemodel.add(layers.PReLU())
+densemodel.add(Dense(32, activation=None))
+densemodel.add(layers.PReLU())
 densemodel.add(Dense(1))
 
 # # Basic CNN
@@ -128,12 +128,12 @@ def create_CNN(conv, batch_norm, activation, pooling, dense, dropout,
 
     return cnn_model
 
-conv_1 = create_CNN(conv = [64,32,16], batch_norm = [1,1,1],
-                           activation = ['prelu', 'prelu', 'prelu'],
-                          pooling = [2,2,None], dense=[128,64,32],
-                           dense_activation=None, dropout = [0.2,0.2,0.2],
-                           filter_size = 3, show_summary = True)
 
+conv_1 = create_CNN(conv=[64, 32, 16], batch_norm=[1, 1, 1],
+                    activation=['prelu', 'prelu', 'prelu'],
+                    pooling=[2, 2, None], dense=[128, 64, 32],
+                    dense_activation=None, dropout=[0.2, 0.2, 0.2],
+                    filter_size=3)
 
 # Resnet Test
 res_input = keras.Input(shape=(32, 32, 1), name="img")

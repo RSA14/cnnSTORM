@@ -56,14 +56,13 @@ def scale_zpos(zpos, center=None, scale=None):
     return normalised_data, center, scale
 
 
-
-def process_MATLAB_data(psf_path, zpos_path, normalise_images = True):
+def process_MATLAB_data(psf_path, zpos_path, normalise_images=True):
     print("Processing MATLAB data.")
-    #Load matlab arrays
+    # Load matlab arrays
     PSFs = sio.loadmat(psf_path)
     Zpos = sio.loadmat(zpos_path)
 
-    #Extract arrays into numpy
+    # Extract arrays into numpy
     psf = PSFs[list(PSFs.keys())[-1]]
     zpos = Zpos[list(Zpos.keys())[-1]]
 
@@ -73,12 +72,10 @@ def process_MATLAB_data(psf_path, zpos_path, normalise_images = True):
     if normalise_images:
         psf = image_processing.normalise_image(psf)
 
-    #Reshape arrays into standard input format for CNNs
-    x_train = psf.reshape(psf.shape[2], psf.shape[0], psf.shape[1], 1)
+    # Reshape arrays into standard input format for CNNs
+    # Note that MATLAB array storage is different from numpy! Need to transpose!
+    x_train = psf.transpose([2, 0, 1])
+    x_train = x_train.reshape((x_train.shape[0], x_train.shape[1], x_train.shape[2], 1))
     y_train = zpos.reshape(zpos.shape[0])
 
     return x_train, y_train
-
-
-
-
