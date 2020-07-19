@@ -41,6 +41,9 @@ def identity_residual_block(inputs, activation='relu',
 
     elif activation == 'prelu':
         residual = layers.PReLU()(residual)
+    else:
+        raise NotImplementedError
+
 
     # Second convolution layer -> BN. Activation follows after adding shortcut
     residual = Conv2D(f, kernel_size=kernel_size, strides=strides, padding='same')(residual)
@@ -53,17 +56,75 @@ def identity_residual_block(inputs, activation='relu',
 
     elif activation == 'prelu':
         output = layers.PReLU()(add)
+    else:
+        raise NotImplementedError
+
+
+    return output
+
+#
+# res_input = keras.Input((32, 32, 1))
+# x = initial_block(res_input, filters=32, kernel_size=7, strides=(1, 1),
+#                   activation='relu')
+#
+# x = identity_residual_block(x)
+# x = identity_residual_block(x)
+# x = identity_residual_block(x)
+#
+# x = layers.GlobalAveragePooling2D()(x)
+# x = layers.Flatten()(x)
+# res_output = layers.Dense(1)(x)
+#
+# resnet_test = keras.Model(res_input, res_output)
+# # resnet_test.summary()
+# # keras.utils.plot_model(resnet_test, show_shapes=True)
+
+
+# Using new architecture proposed by MSFT research team.
+# Implement pre-activation using BN -> ReLU -> Conv
+
+def preactivated_identity_residual_block(inputs, activation='relu',
+                                         kernel_size=3, strides=(1, 1)):
+    # Set residual and shortcut as inputs for clarity
+    shortcut = inputs
+    residual = inputs
+    f = K.int_shape(inputs)[3]  # Filters must be fixed to input shape for dimension adding later
+
+    #Pre-activation using BN and P/ReLU
+    residual = layers.BatchNormalization()(inputs)
+
+    if activation == 'relu':
+        residual = layers.ReLU()(residual)
+    elif activation == 'prelu':
+        residual = layers.PReLU()(residual)
+    else:
+        raise NotImplementedError
+
+    # Padding is 'same' to ensure shortcut/residual have same dims
+    residual = Conv2D(f, kernel_size=kernel_size, strides=strides, padding='same')(residual)
+
+    residual = BatchNormalization()(residual)
+    if activation == 'relu':
+        residual = layers.ReLU()(residual)
+
+    elif activation == 'prelu':
+        residual = layers.PReLU()(residual)
+
+    else:
+        raise NotImplementedError
+
+    # Second convolution layer -> addition. Only pre-activation, no post.
+    residual = Conv2D(f, kernel_size=kernel_size, strides=strides, padding='same')(residual)
+
+    output = layers.Add()([shortcut, residual])  # Add shortcut and residual
 
     return output
 
 
 res_input = keras.Input((32, 32, 1))
-x = initial_block(res_input, filters=32, kernel_size=7, strides=(1, 1),
-                  activation='relu')
-
-x = identity_residual_block(x)
-x = identity_residual_block(x)
-x = identity_residual_block(x)
+x = Conv2D(64, kernel_size=7)(res_input)
+x = preactivated_identity_residual_block(x)
+x = preactivated_identity_residual_block(x)
 
 x = layers.GlobalAveragePooling2D()(x)
 x = layers.Flatten()(x)
@@ -71,4 +132,5 @@ res_output = layers.Dense(1)(x)
 
 resnet_test = keras.Model(res_input, res_output)
 # resnet_test.summary()
-# keras.utils.plot_model(resnet_test, show_shapes=True)
+keras.utils.plot_model(resnet_test, show_shapes=True)
+

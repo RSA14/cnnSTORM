@@ -1,6 +1,6 @@
 from PIL import Image, ImageSequence
 import numpy as np
-from skimage import io
+from skimage import io, feature
 import matplotlib.pyplot as plt
 import scipy
 import os
@@ -53,7 +53,7 @@ def filter_points(points, bound=16):
     """
     Filters emitters using list of emitter locations and a boundary
 
-    :param points: pixel locations of emitters
+    :param points: pixel locations of emitters, must be a dataframe with columns "x" and "y"
     :param bound: Exclusion boundary around any emitter
     :return: Viable emitter positions
     """
@@ -82,7 +82,7 @@ def get_emitter_data(image, points, bound=16, normalise=True):
     :param normalise: Normalise image 0-1
     :return: Array of (bound, bound) PSFs of each emitter and corresponding z-position
     """
-    image_data = np.zeros((1, bound*2, bound*2))  # Store cut images
+    image_data = np.zeros((1, bound * 2, bound * 2))  # Store cut images
     z_data = np.zeros(1)  # Store corresponding z-position
 
     # Check if emitters are near edge of image so PSF cannot be cropped properly
@@ -111,3 +111,12 @@ def get_emitter_data(image, points, bound=16, normalise=True):
     return image_data, z_data
 
 
+def detect_blobs(image, min_sigma=1, max_sigma=50, num_sigma=10, threshold=0.01,
+                 overlap=.5):
+    blob_positions = feature.blob_log(image, min_sigma=min_sigma, max_sigma=max_sigma,
+                                      num_sigma=num_sigma, threshold=threshold,
+                                      overlap=overlap)
+
+    positions = pd.DataFrame({"x": blob_positions[0,:], "y": blob_positions[1,:]})
+
+    return positions

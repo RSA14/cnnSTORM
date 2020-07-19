@@ -18,14 +18,14 @@ def train_model(model, x_train, y_train,
     return fit
 
 
-def get_metrics(history, show_plot = False):
+def get_metrics(history, show_plot=False, y_ax_lim=None):
     last_val_loss = history.history['val_loss'][-1]
     best_val_loss = min(history.history['val_loss'])
     epoch = history.history['val_loss'].index(best_val_loss)
 
     records = pd.DataFrame({"last_val_loss": last_val_loss,
                             "best_val_loss": best_val_loss,
-                            "best_epoch": epoch+1}, index=[0])
+                            "best_epoch": epoch + 1}, index=[0])
 
     if show_plot:
         plt.plot(history.history['loss'])
@@ -34,7 +34,8 @@ def get_metrics(history, show_plot = False):
         plt.ylabel('Loss (MSE)')
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Validation'], loc='upper left')
+        if y_ax_lim is not None:
+            plt.ylim(y_ax_lim[0], y_ax_lim[1])
         plt.show()
 
     return records
-

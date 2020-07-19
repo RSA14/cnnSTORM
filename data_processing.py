@@ -79,3 +79,8 @@ def process_MATLAB_data(psf_path, zpos_path, normalise_images=True):
     y_train = zpos.reshape(zpos.shape[0])
 
     return x_train, y_train
+
+# def process_beadstack(images, min_sigma=1, max_sigma=50, num_sigma=10, threshold=0.01,
+#                  overlap=.5):
+
+
