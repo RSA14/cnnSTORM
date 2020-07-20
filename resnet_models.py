@@ -208,7 +208,7 @@ def create_resnet(input_shape=(32, 32, 1), output_shape=1):
 
 resnet_model = create_resnet()
 resnet_model.summary()
-keras.utils.plot_model(resnet_model, show_shapes=True)
+# keras.utils.plot_model(resnet_model, show_shapes=True)
 
 
 # Using new architecture proposed by MSFT research team.
