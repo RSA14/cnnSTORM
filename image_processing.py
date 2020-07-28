@@ -23,7 +23,7 @@ def convert_to_8bit(image):  # Convert from 16-bit to 8-bit
     return converted_image
 
 
-def cut_image(image, center, width=(16, 16), show=False):
+def cut_image(image, center, width=16, show=False):
     """
 
     :param image: numpy array representing image
@@ -37,9 +37,8 @@ def cut_image(image, center, width=(16, 16), show=False):
     # order as would be for a coordinate point (x,y). I.e. point x,y in the image
     # is actually image[y,x]
 
-    x_width, y_width = width[0], width[1]
-    x_min, x_max = int(center[1] - x_width), int(center[1] + x_width)
-    y_min, y_max = int(center[0] - y_width), int(center[0] + y_width)
+    x_min, x_max = int(center[1] - width), int(center[1] + width)
+    y_min, y_max = int(center[0] - width), int(center[0] + width)
 
     cut = image[x_min:x_max, y_min:y_max]
 
@@ -49,7 +48,7 @@ def cut_image(image, center, width=(16, 16), show=False):
     return cut
 
 
-def filter_points(points, bound=16):
+def filter_points(points: pd.DataFrame, bound=16):
     """
     Filters emitters using list of emitter locations and a boundary
 
@@ -58,6 +57,8 @@ def filter_points(points, bound=16):
     :return: Viable emitter positions
     """
     rejected_points = set()
+    # Reset point indices in case we have already filtered points out before this step
+    points = points.reset_index(drop=True)
 
     for i in range(len(points) - 1):
         for j in range(i + 1, len(points)):
@@ -71,19 +72,26 @@ def filter_points(points, bound=16):
     return points.drop(rejected_points)
 
 
-def get_emitter_data(image, points, bound=16, normalise=True):
+def get_emitter_data(image, points, bound=16, normalise=True, with_zpos=True):
     """
     Cuts out the (bound, bound) shape around filtered emitters given by points,
-    normalise will normalise the final image to 0-1. Can probably combine with filter points
+    normalise will normalise the final image to 0-1.
 
+    with_zpos indicates whether z-positions accompany points in the points list. Set True for
+    known/simulated data, set to False if working with test data for prediction (unknown zpos).
+
+    :param with_zpos: Boolean indicating if z-position is given in points list
     :param image: Full image of all emitters
     :param points: Filtered list of emitters
     :param bound: Exclusion zone
-    :param normalise: Normalise image 0-1
+    :param normalise: Normalise image 0-1 BEFORE processing
     :return: Array of (bound, bound) PSFs of each emitter and corresponding z-position
     """
     image_data = np.zeros((1, bound * 2, bound * 2))  # Store cut images
-    z_data = np.zeros(1)  # Store corresponding z-position
+    z_data = np.zeros(1)  # Store corresponding z-position if needed
+
+    if normalise:
+        image = normalise_image(image)
 
     # Check if emitters are near edge of image so PSF cannot be cropped properly
     for i in points.index:
@@ -95,20 +103,26 @@ def get_emitter_data(image, points, bound=16, normalise=True):
         # Cut out image with emitter i at center.
         psf = cut_image(image,
                         (points["x"][i], points["y"][i]),
-                        width=(bound, bound))
-        if normalise:
-            psf = normalise_image(psf)  # Normalise image 0-1 as is common
-        z_position = points["z"][i]  # Corresponding z-pos
+                        width=bound)
 
         # Append to respective arrays
+
         image_data = np.append(image_data, [psf], axis=0)
-        z_data = np.append(z_data, z_position)
+
+        if with_zpos:
+            z_position = points["z"][i]  # Corresponding z-pos if available
+            z_data = np.append(z_data, z_position)
 
     # Delete zeroth initiated elements
     image_data = np.delete(image_data, 0, axis=0)
     z_data = np.delete(z_data, 0)
 
-    return image_data, z_data
+    if with_zpos:
+        # Returns both PSFs and corresponding z-pos
+        return image_data, z_data
+    else:
+        # Returns PSFs only
+        return image_data
 
 
 def detect_blobs(image, min_sigma=1, max_sigma=50, num_sigma=10, threshold=0.01,
@@ -117,6 +131,7 @@ def detect_blobs(image, min_sigma=1, max_sigma=50, num_sigma=10, threshold=0.01,
                                       num_sigma=num_sigma, threshold=threshold,
                                       overlap=overlap)
 
-    positions = pd.DataFrame({"x": blob_positions[0,:], "y": blob_positions[1,:]})
+    # Note the swap in columns, this is for use with cut_image where x & y are swapped for images
+    positions = pd.DataFrame({"x": blob_positions[:, 1], "y": blob_positions[:, 0]})
 
     return positions

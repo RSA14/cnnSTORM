@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import keras
 
 
 def train_model(model, x_train, y_train,
@@ -39,3 +40,14 @@ def get_metrics(history, show_plot=False, y_ax_lim=None):
         plt.show()
 
     return records
+
+
+def test_model(model: keras.Model, test_set, truth, metrics=('mse')):
+    metrics_dict = {}
+    predictions = model.predict(test_set)
+
+    if 'mse' in metrics:
+        mse = np.mean(np.square(predictions - truth))
+        metrics_dict['mse'] = mse
+
+    return metrics_dict
