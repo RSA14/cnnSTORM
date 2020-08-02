@@ -9,13 +9,14 @@ import tensorflow as tf
 
 # print(tf.config.list_physical_devices())
 # Run process_data first to get cached image data + z-positions
-#STORM data
+# STORM data
 # X_train, y_train = data_processing.process_STORM_data('ThunderSTORM/Simulated/LowDensity',
 #                                                       samples=500)
-#MATLAB data
-X_train, y_train = data_processing.process_MATLAB_data('../data/Simulated/PSF_toolbox/PSF_2_all.mat',
-                                                       '../data/Simulated/PSF_toolbox/Zpos_2_all.mat',
-                                                       normalise_images=False)
+# MATLAB data
+X_train, y_train = data_processing.process_MATLAB_data(
+    '/rds/general/user/rsa14/home/data/Simulated/PSF_toolbox/PSF_2_all.mat',
+    '/rds/general/user/rsa14/home/data/Simulated/PSF_toolbox/Zpos_2_all.mat',
+    normalise_images=False)
 # print(X_train.shape)
 
 
@@ -24,27 +25,26 @@ X_train, y_train = data_processing.process_MATLAB_data('../data/Simulated/PSF_to
 # y_train_norm, y_mean, y_sd = data_processing.scale_zpos(y_train)
 # print(X_train.shape)
 
-#Create resnet model
+# Create resnet model
 
-inputs = keras.layers.Input((32,32,1))
-model = resnet_models.conv_bn_activation_block(inputs, 64, activation = 'prelu', kernel_size = 5, strides = (1,1))
+inputs = keras.layers.Input((32, 32, 1))
+model = resnet_models.conv_bn_activation_block(inputs, 64, activation='prelu', kernel_size=5, strides=(1, 1))
 
-model = resnet_models.bottleneck_projection_block(model, filters = [64,64,256], strides=1, activation ='prelu')
-model = resnet_models.bottleneck_identity_block(model, filters = [64,64,256], activation = 'prelu')
-model = resnet_models.bottleneck_identity_block(model, filters = [64,64,256], activation = 'prelu')
+model = resnet_models.bottleneck_projection_block(model, filters=[64, 64, 256], strides=1, activation='prelu')
+model = resnet_models.bottleneck_identity_block(model, filters=[64, 64, 256], activation='prelu')
+model = resnet_models.bottleneck_identity_block(model, filters=[64, 64, 256], activation='prelu')
 # model = keras.layers.MaxPooling2D(2)(model)
 
-model = resnet_models.bottleneck_projection_block(model, filters = [64,64,256], strides=2, activation='prelu')
-model = resnet_models.bottleneck_identity_block(model, filters = [64,64,256], activation = 'prelu')
-model = resnet_models.bottleneck_identity_block(model, filters = [64,64,256], activation = 'prelu')
-model = resnet_models.bottleneck_identity_block(model, filters = [64,64,256], activation = 'prelu')
+model = resnet_models.bottleneck_projection_block(model, filters=[64, 64, 256], strides=2, activation='prelu')
+model = resnet_models.bottleneck_identity_block(model, filters=[64, 64, 256], activation='prelu')
+model = resnet_models.bottleneck_identity_block(model, filters=[64, 64, 256], activation='prelu')
+model = resnet_models.bottleneck_identity_block(model, filters=[64, 64, 256], activation='prelu')
 # model = keras.layers.MaxPooling2D(2)(model)
 
-model = resnet_models.bottleneck_projection_block(model, filters = [64,64,256], strides=2, activation='prelu')
-model = resnet_models.bottleneck_identity_block(model, filters = [64,64,256], activation = 'prelu')
-model = resnet_models.bottleneck_identity_block(model, filters = [64,64,256], activation = 'prelu')
-model = resnet_models.bottleneck_identity_block(model, filters = [64,64,256], activation = 'prelu')
-
+model = resnet_models.bottleneck_projection_block(model, filters=[64, 64, 256], strides=2, activation='prelu')
+model = resnet_models.bottleneck_identity_block(model, filters=[64, 64, 256], activation='prelu')
+model = resnet_models.bottleneck_identity_block(model, filters=[64, 64, 256], activation='prelu')
+model = resnet_models.bottleneck_identity_block(model, filters=[64, 64, 256], activation='prelu')
 
 model = keras.layers.GlobalAveragePooling2D()(model)
 model = keras.layers.Flatten()(model)
@@ -63,4 +63,3 @@ records = trainer.get_metrics(history, show_plot=True, save_plot=True)
 f = open('dict.txt', 'w')
 f.write(str(history))
 f.close()
-
