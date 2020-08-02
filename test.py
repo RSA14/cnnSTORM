@@ -55,9 +55,12 @@ resnet_1 = keras.Model(inputs, outputs)
 history = trainer.train_model(resnet_1, x_train=X_train, y_train=y_train,
                               optimizer=keras.optimizers.Adam(learning_rate=0.001),
                               loss='mse', metrics=['mse'], validation_split=0.2,
-                              epochs=50, batch_size=32, summary=False)
+                              epochs=25, batch_size=32, summary=False)
 
-records = trainer.get_metrics(history, show_plot=True)
-print(records)
+records = trainer.get_metrics(history, show_plot=True, save_plot=True)
+# print(records)
 
+f = open('dict.txt', 'w')
+f.write(str(history))
+f.close()
 

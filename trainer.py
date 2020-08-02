@@ -19,7 +19,7 @@ def train_model(model, x_train, y_train,
     return fit
 
 
-def get_metrics(history, show_plot=False, y_ax_lim=None):
+def get_metrics(history, show_plot=False, save_plot=False, y_ax_lim=None):
     last_val_loss = history.history['val_loss'][-1]
     best_val_loss = min(history.history['val_loss'])
     epoch = history.history['val_loss'].index(best_val_loss)
@@ -38,6 +38,9 @@ def get_metrics(history, show_plot=False, y_ax_lim=None):
         if y_ax_lim is not None:
             plt.ylim(y_ax_lim[0], y_ax_lim[1])
         plt.show()
+
+        if save_plot:
+            plt.savefig('trainingplot.png')
 
     return records
 
