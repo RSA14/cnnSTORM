@@ -110,7 +110,7 @@ def process_MATLAB_data(psf_path, zpos_path, normalise_images=True):
 
 
 def process_STORM_zstack(image, emitter_positions, z_data, bound=16, y_dims=1,
-                         intensity_threshold=10000,
+                         intensity_threshold=10000, filter_points=True,
                          pixel_size=106, normalise_images=True):
     """
     Extracts PSFs from a zstack of beads (image) with emitter_positions given by STORM.
@@ -118,6 +118,7 @@ def process_STORM_zstack(image, emitter_positions, z_data, bound=16, y_dims=1,
     or depth can be calculated for each frame in the image. We then apply this z-position to points
     in each frame and filter points/extract PSFs using previously defined functions.
 
+    :param filter_points: To filter points
     :param z_data: a tuple/list of start, stop, step of z-positions.
     :param image:
     :param emitter_positions:
@@ -156,9 +157,10 @@ def process_STORM_zstack(image, emitter_positions, z_data, bound=16, y_dims=1,
     # Now we iterate through each frame, filter points for proximity, extract PSFs and z-positions
     for i in range(actual_frames):
         emitters_in_frame = emitters[data["frame"] == i + 1]
-        filtered_emitters = image_processing.filter_points(emitters_in_frame,
-                                                           bound=bound)
-        x, y = image_processing.get_emitter_data(image[i], filtered_emitters, bound=bound,
+        if filter_points:
+            emitters_in_frame = image_processing.filter_points(emitters_in_frame,
+                                                               bound=bound)
+        x, y = image_processing.get_emitter_data(image[i], emitters_in_frame, bound=bound,
                                                  normalise=normalise_images)
 
         x_all = np.append(x_all, x, axis=0)

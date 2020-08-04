@@ -197,8 +197,22 @@ def create_resnet(input_shape=(32, 32, 1), output_shape=1):
     # Avg pooling
     x = layers.AveragePooling2D(pool_size=(2, 2), padding='same')(x)
 
-    # Output
+    ### Dense Network
     x = layers.Flatten()(x)
+    x = layers.Dense(128)(x)
+
+    # Skip connection
+    _dense = layers.Dense(128)(x)
+    x = x + _dense
+
+    x = layers.Dense(64)(x)
+
+    # Skip connection
+    _dense = layers.Dense(64)(x)
+    x = x + _dense
+
+    x = layers.Dense(32)(x)
+
     x_output = layers.Dense(output_shape)(x)
 
     model = keras.Model(x_input, x_output)
@@ -207,8 +221,10 @@ def create_resnet(input_shape=(32, 32, 1), output_shape=1):
 
 
 resnet_model = create_resnet()
-# resnet_model.summary()
-# keras.utils.plot_model(resnet_model, show_shapes=True)
+resnet_model.summary()
+
+
+# keras.utils.plot_modsel(resnet_model, show_shapes=True)
 
 
 # Using new architecture proposed by MSFT research team.
