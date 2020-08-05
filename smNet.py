@@ -42,16 +42,17 @@ def resblock(input, filters, stride=1):
 class HardTanh(layers.Layer):
     def __init__(self, min_z, max_z):
         super(HardTanh, self).__init__(trainable=False)
-        self.min = tf.constant(min_z, dtype=tf.float32)
-        self.max = tf.constant(max_z, dtype=tf.float32)
+        self.min = min_z
+        self.max = max_z
 
     def call(self, inputs, **kwargs):
-        if inputs < self.min:
-            return self.min
-        elif inputs > self.max:
-            return self.max
-        else:
-            return inputs
+        isLesser = tf.cast(inputs < self.min, 'float32')
+        _inputs = self.min * isLesser + (1-isLesser)*inputs
+
+        isGreater = tf.cast(_inputs > self.max, 'float32')
+        _inputs = self.max * isGreater + (1-isGreater)*_inputs
+
+        return _inputs
 
     def get_config(self):
         config = {'min': float(self.min), 'max': float(self.max)}
@@ -102,11 +103,7 @@ def create_smNet(input_dims=(32, 32, 1), output_dims=1, min_z=-500, max_z=500):
     x = layers.PReLU()(x)
     output = layers.Dense(output_dims)(x)
 
-    print(type(output))
-    print(output)
     output = HardTanh(min_z=min_z, max_z=max_z)(output)
-    print(type(output))
-    print(output)
 
     model = keras.Model(input, output)
 
