@@ -94,7 +94,7 @@ def bottleneck_identity_block(inputs, filters=(64, 64, 256), activation='relu',
         raise NotImplementedError
 
     # Second convolution layer -> BN -> activation
-    # Padding is 'valid' to ensure same dims
+    # Padding is 'same' to ensure same dims
     residual = Conv2D(f2, kernel_size=kernel_size, strides=(1, 1), padding='same')(residual)
     residual = BatchNormalization()(residual)
 
@@ -139,7 +139,7 @@ def bottleneck_projection_block(inputs, filters, activation='relu',
         raise NotImplementedError
 
     # Second convolution layer -> BN -> activation
-    # Padding is 'valid' to ensure same dims
+    # Padding is 'same' to ensure same dims
     residual = Conv2D(f2, kernel_size=kernel_size, strides=(1, 1), padding='same')(residual)
     residual = BatchNormalization()(residual)
 
@@ -220,8 +220,6 @@ def create_resnet(input_shape=(32, 32, 1), output_shape=1):
     return model
 
 
-resnet_model = create_resnet()
-resnet_model.summary()
 
 
 # keras.utils.plot_modsel(resnet_model, show_shapes=True)
