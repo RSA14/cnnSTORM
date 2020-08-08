@@ -265,3 +265,28 @@ def process_blob_zstack(image, z_data, bound=16, y_dims=1,
     x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], x_train.shape[2], 1)
 
     return x_train, y_train
+
+
+def split_MATLAB_data(data, mags, zpos, iterations, split_by='mags'):
+    X, y = data
+    N = X.shape[0]
+
+    # Sanity check, N must match splitting criteria
+    assert N == len(mags) * len(zpos) * iterations, "Chosen inputs do not match input data size."
+    split_data_x = {}
+    split_data_y = {}
+
+    if split_by == 'mags':
+        # Splitting dataset by magnitude of aberrations
+        for i in range(len(mags)):
+            index_offset = i*iterations*len(zpos)
+            split_data_x[f'{mags[i]}'] = X[0+index_offset:iterations*len(zpos)+index_offset-1]
+            split_data_y[f'{mags[i]}'] = y[0+index_offset:iterations*len(zpos)+index_offset-1]
+
+    else:
+        raise NotImplementedError
+
+    return split_data_x, split_data_y
+
+
+

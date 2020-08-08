@@ -33,12 +33,12 @@ resmodel = resnet_models.create_resnet()
 history = trainer.train_model(model, x_train=X_train, y_train=y_train,
                               optimizer=keras.optimizers.Adam(learning_rate=0.001),
                               loss='mse', metrics=None, validation_split=0.2,
-                              epochs=25, batch_size=32, summary=False)
+                              epochs=5, batch_size=32, summary=False)
 
-records = trainer.get_metrics(history, show_plot=True, plot_name='resmodel.png')
-#
-# f = open('dict.txt', 'w')
-# f.write(str(history.history))
-# f.close()
+records = trainer.get_metrics(history, show_plot=True, plot_name='smNet.png')
+
+f = open('dict.txt', 'w')
+f.write(str(history.history))
+f.close()
 
 
