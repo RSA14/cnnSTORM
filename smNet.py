@@ -38,7 +38,7 @@ def resblock(input, filters, stride=1):
 
 
 # HardTanh activation
-
+HardTanh.get_weights()
 class HardTanh(layers.Layer):
     def __init__(self, min_z, max_z):
         super(HardTanh, self).__init__(trainable=False)

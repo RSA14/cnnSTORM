@@ -7,11 +7,11 @@ import keras
 def train_model(model, x_train, y_train,
                 optimizer='adam', loss='mse', metrics=['mse'],
                 validation_split=0.2, epochs=3, batch_size=1,
-                summary=False
+                summary=False, verbose=1
                 ):
     model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
     fit = model.fit(x_train, y_train, validation_split=validation_split,
-                    epochs=epochs, batch_size=batch_size)
+                    epochs=epochs, batch_size=batch_size, verbose=verbose)
 
     if summary:
         model.summary()

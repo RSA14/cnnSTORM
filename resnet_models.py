@@ -266,15 +266,5 @@ def preactivated_identity_residual_block(inputs, activation='relu',
     return output
 
 
-res_input = keras.Input((32, 32, 1))
-x = Conv2D(64, kernel_size=7)(res_input)
-x = preactivated_identity_residual_block(x)
-x = preactivated_identity_residual_block(x)
 
-x = layers.GlobalAveragePooling2D()(x)
-x = layers.Flatten()(x)
-res_output = layers.Dense(1)(x)
-
-resnet_test = keras.Model(res_input, res_output)
-# resnet_test.summary()
 # keras.utils.plot_model(resnet_test, show_shapes=True)

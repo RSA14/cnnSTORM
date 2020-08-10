@@ -5,6 +5,7 @@ from skimage import io, feature
 import os
 import pandas as pd
 import image_processing
+import random
 
 
 # Use ImageJ macro to generate bead frames, then use this code to
@@ -268,6 +269,18 @@ def process_blob_zstack(image, z_data, bound=16, y_dims=1,
 
 
 def split_MATLAB_data(data, mags, zpos, iterations, split_by='mags'):
+    """
+    Returns MATLAB data as a dictionary (key:value pair) where the keys are
+    magnitude of aberrations (mags) and values are the corresponding PSFs of various
+    zpos for that particular simulated aberration. Iterations = no. of iterations per PSF.
+
+    :param data:
+    :param mags:
+    :param zpos:
+    :param iterations:
+    :param split_by:
+    :return:
+    """
     X, y = data
     N = X.shape[0]
 
@@ -279,9 +292,9 @@ def split_MATLAB_data(data, mags, zpos, iterations, split_by='mags'):
     if split_by == 'mags':
         # Splitting dataset by magnitude of aberrations
         for i in range(len(mags)):
-            index_offset = i*iterations*len(zpos)
-            split_data_x[f'{mags[i]}'] = X[0+index_offset:iterations*len(zpos)+index_offset-1]
-            split_data_y[f'{mags[i]}'] = y[0+index_offset:iterations*len(zpos)+index_offset-1]
+            index_offset = i * iterations * len(zpos)
+            split_data_x[f'{mags[i]}'] = X[0 + index_offset:iterations * len(zpos) + index_offset - 1]
+            split_data_y[f'{mags[i]}'] = y[0 + index_offset:iterations * len(zpos) + index_offset - 1]
 
     else:
         raise NotImplementedError
@@ -289,4 +302,33 @@ def split_MATLAB_data(data, mags, zpos, iterations, split_by='mags'):
     return split_data_x, split_data_y
 
 
+def process_MATLAB_split_data(data, train_keys_size):
+    """
+    Process data split into dictionaries by split_MATLAB_data. Separates data into
+    training and testing based on train_keys_size. Suppose dictionary x has A keys, and
+    train_keys_size is B, then x_train will have B keys while x_test will have the remaining
+    A-B keys.
 
+    :param data:
+    :param train_keys_size:
+    :return:
+    """
+
+    x, y = data
+
+    keys = list(x.keys())
+    random.shuffle(keys)
+
+    train_keys, test_keys = keys[:train_keys_size], keys[train_keys_size:]
+
+    x_ = {key: x[key] for key in train_keys}
+    y_ = {key: y[key] for key in train_keys}
+    x__ = {key: x[key] for key in test_keys}
+    y__ = {key: y[key] for key in test_keys}
+
+    x_train = np.concatenate(list(x_.values()))
+    y_train = np.concatenate(list(y_.values()))
+    x_test = np.concatenate(list(x__.values()))
+    y_test = np.concatenate(list(y__.values()))
+
+    return x_train, y_train, x_test, y_test
