@@ -10,7 +10,7 @@ import models
 
 
 def MSE_loss(pred_y, y):
-    return keras.losses.mean_squared_error(y, pred_y)
+    return keras_backend.mean(keras.losses.mean_squared_error(y, pred_y))
 
 
 def copy_model(model: keras.Model, x):
