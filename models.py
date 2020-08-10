@@ -85,7 +85,29 @@ def create_CNN(conv, batch_norm, activation, pooling, dense, dropout,
 
     return cnn_model
 
+
 # Laplacian Kernel Loss
 
 # def laplacian_kernel_loss(y_true, y_pred, sigma=1):
+
+# Model and utils for metalearning
+class DenseModel(keras.Model):
+    def __init__(self):
+        super().__init__()
+        self.flatten = layers.Flatten(input_shape=(32, 32, 1))
+        self.hidden1 = layers.Dense(256)
+        self.hidden2 = layers.Dense(128)
+        self.hidden3 = layers.Dense(64)
+        self.hidden4 = layers.Dense(32)
+        self.out = layers.Dense(1)
+
+    def call(self, x):
+        x = self.flatten(x)
+        x = keras.activations.relu(self.hidden1(x))
+        x = keras.activations.relu(self.hidden2(x))
+        x = keras.activations.relu(self.hidden3(x))
+        x = keras.activations.relu(self.hidden4(x))
+        x = self.out(x)
+        return x
+
 
