@@ -236,9 +236,9 @@ def train_REPTILE(model: keras.Model, dataset, training_keys,
             x, y = _x[train_idx], _y[train_idx]
             n_batches = int(np.floor(len(x) / batch_size))  # For batch processing
 
-            model_copy = keras.models.clone_model(model)
-            model_copy.set_weights(model.get_weights())
-
+            # model_copy = keras.models.clone_model(model)
+            # model_copy.set_weights(model.get_weights())
+            model_copy = copy_model(model, x)
             # Training batches of inner loop
             for n in range(n_batches + 1):
                 with tf.GradientTape() as train_tape:
@@ -253,6 +253,7 @@ def train_REPTILE(model: keras.Model, dataset, training_keys,
 
                         epoch_total_loss += inner_loss * len(x[n * batch_size:])  # Adding total loss = n*mse
 
+                print(f"Loss: {inner_loss}")
                 gradients = train_tape.gradient(inner_loss, model_copy.trainable_variables)
                 inner_optimizer.apply_gradients(zip(gradients, model_copy.trainable_variables))
 
