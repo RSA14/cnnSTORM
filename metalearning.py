@@ -163,7 +163,7 @@ def train_REPTILE(model: keras.Model, dataset, training_keys,
 
             for j in range(len(phi)):
                 delta = lr_meta * (phi_tilde[j] - phi[j])
-                new_weight = phi + delta
+                new_weight = phi[j] + delta
                 updated_weights.append(new_weight)
 
             model.set_weights(updated_weights)

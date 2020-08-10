@@ -9,4 +9,4 @@ from keras import layers
 
 
 def MSE_loss(pred_y, y):
-    return keras_backend.mean(keras.losses.mean_squared_error(y, pred_y))
+    return keras.losses.mean_squared_error(y, pred_y)
