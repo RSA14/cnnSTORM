@@ -12,6 +12,10 @@ import models
 def MSE_loss(pred_y, y):
     return keras_backend.mean(keras.losses.mean_squared_error(y, pred_y))
 
+def compute_MSE_loss(model, x, y):
+    pred_y = model.call(x)
+    mse = MSE_loss(pred_y, y)
+    return mse
 
 def copy_model(model: keras.Model, x):
     model_copy = models.DenseModel()

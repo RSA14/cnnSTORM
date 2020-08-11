@@ -6,7 +6,9 @@ import tensorflow as tf
 import keras
 from keras import backend as keras_backend
 from keras import layers
-from metalearning_utils import MSE_loss, copy_model
+from metalearning_utils import MSE_loss, copy_model, compute_MSE_loss
+import trainer
+
 
 def train_SOMAML(model, dataset, training_keys,
                  epochs=1, lr_inner=0.01, lr_meta=0.01,
@@ -280,3 +282,70 @@ def train_REPTILE(model: keras.Model, dataset, training_keys,
     plt.show()
 
     return epoch_losses
+
+
+def train_REPTILE_simple(model: keras.Model, dataset, training_keys,
+                         epochs=1, lr_inner=0.01, lr_meta=0.01,
+                         batch_size=32, validation_split=0.2):
+
+    meta_optimizer = keras.optimizers.Adam(learning_rate=lr_meta)
+    X_, y_ = dataset
+
+    epoch_train_losses = []
+    epoch_val_losses = []
+
+    for epoch in range(epochs):
+        epoch_start = time.time()
+
+        epoch_train_loss = []
+        epoch_val_loss = []
+
+        for i, key in enumerate(training_keys):
+            # Inner loop for task i, SGD/Adam on the learner model
+            _x, _y = X_[key], y_[key]
+            model_copy = copy_model(model, _x)
+
+            history = trainer.train_model(model_copy, x_train=_x, y_train=_y,
+                                          optimizer=keras.optimizers.Adam(learning_rate=lr_inner),
+                                          loss='mse', metrics=None, validation_split=validation_split,
+                                          epochs=1, batch_size=batch_size, summary=False, verbose=0)
+
+            # Log losses of each task
+            task_train_loss = history.history['loss'][0]
+            task_val_loss = history.history['val_loss'][0]
+
+            epoch_train_loss.append(task_train_loss)
+            epoch_val_loss.append(task_val_loss)
+
+            # Meta-update step per task phi <- phi + lr_meta*(phi~ - phi)
+            updated_weights = []
+            phi_tilde = model_copy.get_weights()
+            phi = model.get_weights()
+            directions = []
+
+            for j in range(len(phi)):
+                direction = phi[j] - phi_tilde[j]  # This works whereas flipping this does not!
+                delta = lr_meta * (phi_tilde[j] - phi[j])
+                new_weight = phi[j] + delta
+                updated_weights.append(new_weight)
+                directions.append(direction)
+
+            # model.set_weights(updated_weights)
+            meta_optimizer.apply_gradients(zip(directions, model.trainable_variables))
+
+        # Logging overall epoch losses
+        _train_loss = np.mean(epoch_train_loss)
+        _val_loss = np.mean(epoch_val_loss)
+        epoch_train_losses.append(_train_loss)
+        epoch_val_losses.append(_val_loss)
+
+        print(f"Epoch {epoch + 1} / {epochs} completed in {time.time() - epoch_start:.2f}s")
+        print(f"Epoch train loss: {_train_loss}, val loss: {_val_loss}")
+
+    plt.plot(epoch_train_losses)
+    plt.plot(epoch_val_losses)
+    plt.show()
+
+    output = {'loss': epoch_train_losses, 'val_loss': epoch_val_losses}
+
+    return output
