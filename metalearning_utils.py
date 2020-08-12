@@ -23,3 +23,4 @@ def copy_model(model: keras.Model, x):
     model_copy.set_weights(model.get_weights())
 
     return model_copy
+

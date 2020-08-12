@@ -5,7 +5,7 @@ import keras
 
 
 def train_model(model, x_train, y_train,
-                optimizer='adam', loss='mse', metrics=['mse'],
+                optimizer='adam', loss='mse', metrics=None,
                 validation_split=0.2, epochs=3, batch_size=1,
                 summary=False, verbose=1
                 ):

@@ -155,7 +155,7 @@ def train_FOMAML(model, dataset, training_keys,
             for n in range(n_batches + 1):
                 with tf.GradientTape() as inner_tape:
                     if n + 1 <= n_batches:  # Check if last batch
-                        inner_loss = MSE_loss(model_copy(x[0 + n * batch_size:(n + 1) * batch_size - 1]),
+                        inner_loss = MSE_loss(model_copy.call(x[0 + n * batch_size:(n + 1) * batch_size - 1]),
                                               y[0 + n * batch_size:(n + 1) * batch_size - 1])
 
                         epoch_total_inner_loss += inner_loss * batch_size  # Adding total loss
@@ -177,7 +177,7 @@ def train_FOMAML(model, dataset, training_keys,
             for n in range(n_batches + 1):
                 with tf.GradientTape() as meta_tape:
                     if n + 1 <= n_batches:  # Check if last batch
-                        meta_loss = MSE_loss(model_copy(x[0 + n * batch_size:(n + 1) * batch_size - 1]),
+                        meta_loss = MSE_loss(model_copy.call(x[0 + n * batch_size:(n + 1) * batch_size - 1]),
                                              y[0 + n * batch_size:(n + 1) * batch_size - 1])
 
                         epoch_total_meta_loss += meta_loss * batch_size
@@ -286,8 +286,9 @@ def train_REPTILE(model: keras.Model, dataset, training_keys,
 
 def train_REPTILE_simple(model: keras.Model, dataset, training_keys,
                          epochs=1, lr_inner=0.01, lr_meta=0.01,
-                         batch_size=32, validation_split=0.2, logging=1):
-    meta_optimizer = keras.optimizers.Adam(learning_rate=lr_meta)
+                         batch_size=32, validation_split=0.2, logging=1, lr_scheduler=None):
+    print("Beginning REPTILE training.")
+
     X_, y_ = dataset
 
     epoch_train_losses = []
@@ -298,6 +299,11 @@ def train_REPTILE_simple(model: keras.Model, dataset, training_keys,
 
         epoch_train_loss = []
         epoch_val_loss = []
+
+        if lr_scheduler:
+            lr_inner, lr_meta = lr_scheduler(epoch+1)
+
+        meta_optimizer = keras.optimizers.Adam(learning_rate=lr_meta)
 
         for i, key in enumerate(training_keys):
             # Inner loop for task i, SGD/Adam on the learner model
@@ -332,6 +338,7 @@ def train_REPTILE_simple(model: keras.Model, dataset, training_keys,
 
             # model.set_weights(updated_weights)
             meta_optimizer.apply_gradients(zip(directions, model.trainable_variables))
+            del model_copy # Cleanup to save memory?
 
         # Logging overall epoch losses
         _train_loss = np.mean(epoch_train_loss)
