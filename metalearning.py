@@ -286,7 +286,7 @@ def train_REPTILE(model: keras.Model, dataset, training_keys,
 
 def train_REPTILE_simple(model: keras.Model, dataset, training_keys,
                          epochs=1, lr_inner=0.01, lr_meta=0.01,
-                         batch_size=32, validation_split=0.2, logs=True):
+                         batch_size=32, validation_split=0.2, logging=1):
     meta_optimizer = keras.optimizers.Adam(learning_rate=lr_meta)
     X_, y_ = dataset
 
@@ -339,9 +339,11 @@ def train_REPTILE_simple(model: keras.Model, dataset, training_keys,
         epoch_train_losses.append(_train_loss)
         epoch_val_losses.append(_val_loss)
 
-        if logs:
-            print(f"Epoch {epoch + 1} / {epochs} completed in {time.time() - epoch_start:.2f}s")
-            print(f"Epoch train loss: {_train_loss}, val loss: {_val_loss}")
+        #Logging every logging steps
+        if logging:
+            if (epoch+1) % logging == 0:
+                print(f"Epoch {epoch + 1} / {epochs} completed in {time.time() - epoch_start:.2f}s")
+                print(f"Epoch train loss: {_train_loss}, val loss: {_val_loss}")
 
     plt.plot(epoch_train_losses)
     plt.plot(epoch_val_losses)

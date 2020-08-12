@@ -43,19 +43,19 @@ y_test = {key: y[key] for key in test_key}
 y_test = list(y_test.values())
 y_test = np.concatenate(y_test)
 
-lr_list = [0.1, 0.01, 0.001, 1e-3, 1e-4, 1e-5]
+lr_list = [0.1, 0.01, 1e-3, 1e-4, 1e-5]
 train_losses = np.zeros((1,1000))
 val_losses = np.zeros((1,1000))
 
 for inner_rate in lr_list:
     for meta_rate in lr_list:
         tf.keras.backend.set_floatx('float64')
-        rep_model = models.DenseModel()
-        rep_model(X_train[0:5])  # Initialise weights
+        rep_model = models.create_DenseModel()
 
         history = metalearning.train_REPTILE_simple(rep_model, (X, y), training_keys=training_keys,
                                                     epochs=1000, lr_inner=inner_rate,
-                                                    batch_size=32, lr_meta=meta_rate)
+                                                    batch_size=32, lr_meta=meta_rate,
+                                                    logging=50)
 
         train_loss = np.array(history['loss'])
         val_loss = np.array(history['val_loss'])

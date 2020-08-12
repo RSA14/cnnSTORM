@@ -86,6 +86,24 @@ def create_CNN(conv, batch_norm, activation, pooling, dense, dropout,
     return cnn_model
 
 # Model and utils for metalearning
+
+def create_DenseModel():
+
+    densemodel = keras.Sequential()
+    densemodel.add(keras.layers.Input((32, 32, 1)))
+    densemodel.add(keras.layers.Flatten())
+    densemodel.add(keras.layers.Dense(256, activation=None))
+    densemodel.add(keras.layers.ReLU())
+    densemodel.add(keras.layers.Dense(128, activation=None))
+    densemodel.add(keras.layers.ReLU())
+    densemodel.add(keras.layers.Dense(64, activation=None))
+    densemodel.add(keras.layers.ReLU())
+    densemodel.add(keras.layers.Dense(32, activation=None))
+    densemodel.add(keras.layers.ReLU())
+    densemodel.add(keras.layers.Dense(1))
+
+    return densemodel
+
 class DenseModel(keras.Model):
     def __init__(self):
         super().__init__()
