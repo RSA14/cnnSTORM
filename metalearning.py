@@ -153,7 +153,7 @@ def train_FOMAML(model, dataset, training_keys,
             # Training batches of inner loop
             batch_size = inner_batch_size
             for n in range(n_batches + 1):
-                with tf.GradientTape() as train_tape:
+                with tf.GradientTape() as inner_tape:
                     if n + 1 <= n_batches:  # Check if last batch
                         inner_loss = MSE_loss(model_copy(x[0 + n * batch_size:(n + 1) * batch_size - 1]),
                                               y[0 + n * batch_size:(n + 1) * batch_size - 1])
@@ -165,7 +165,7 @@ def train_FOMAML(model, dataset, training_keys,
 
                         epoch_total_inner_loss += inner_loss * len(x[n * batch_size:])  # Adding total loss = n*mse
 
-                gradients = train_tape.gradient(inner_loss, model_copy.trainable_variables)
+                gradients = inner_tape.gradient(inner_loss, model_copy.trainable_variables)
                 inner_optimizer.apply_gradients(zip(gradients, model_copy.trainable_variables))
 
             # Load testing data for task T_i
@@ -175,7 +175,7 @@ def train_FOMAML(model, dataset, training_keys,
             # Meta-training batch loop
             batch_size = meta_batch_size
             for n in range(n_batches + 1):
-                with tf.GradientTape() as test_tape:
+                with tf.GradientTape() as meta_tape:
                     if n + 1 <= n_batches:  # Check if last batch
                         meta_loss = MSE_loss(model_copy(x[0 + n * batch_size:(n + 1) * batch_size - 1]),
                                              y[0 + n * batch_size:(n + 1) * batch_size - 1])
@@ -187,7 +187,7 @@ def train_FOMAML(model, dataset, training_keys,
 
                         epoch_total_meta_loss += meta_loss * len(x[n * batch_size:])
 
-                gradients = test_tape.gradient(meta_loss, model_copy.trainable_variables)
+                gradients = meta_tape.gradient(meta_loss, model_copy.trainable_variables)
                 meta_optimizer.apply_gradients(zip(gradients, model.trainable_variables))
 
         # Logging MSEs for inner and meta losses per epoch
@@ -286,8 +286,7 @@ def train_REPTILE(model: keras.Model, dataset, training_keys,
 
 def train_REPTILE_simple(model: keras.Model, dataset, training_keys,
                          epochs=1, lr_inner=0.01, lr_meta=0.01,
-                         batch_size=32, validation_split=0.2):
-
+                         batch_size=32, validation_split=0.2, logs=True):
     meta_optimizer = keras.optimizers.Adam(learning_rate=lr_meta)
     X_, y_ = dataset
 
@@ -303,7 +302,8 @@ def train_REPTILE_simple(model: keras.Model, dataset, training_keys,
         for i, key in enumerate(training_keys):
             # Inner loop for task i, SGD/Adam on the learner model
             _x, _y = X_[key], y_[key]
-            model_copy = copy_model(model, _x)
+            model_copy = keras.models.clone_model(model)
+            model_copy.set_weights(model.get_weights())
 
             history = trainer.train_model(model_copy, x_train=_x, y_train=_y,
                                           optimizer=keras.optimizers.Adam(learning_rate=lr_inner),
@@ -339,8 +339,9 @@ def train_REPTILE_simple(model: keras.Model, dataset, training_keys,
         epoch_train_losses.append(_train_loss)
         epoch_val_losses.append(_val_loss)
 
-        print(f"Epoch {epoch + 1} / {epochs} completed in {time.time() - epoch_start:.2f}s")
-        print(f"Epoch train loss: {_train_loss}, val loss: {_val_loss}")
+        if logs:
+            print(f"Epoch {epoch + 1} / {epochs} completed in {time.time() - epoch_start:.2f}s")
+            print(f"Epoch train loss: {_train_loss}, val loss: {_val_loss}")
 
     plt.plot(epoch_train_losses)
     plt.plot(epoch_val_losses)

@@ -331,4 +331,4 @@ def process_MATLAB_split_data(data, train_keys_size):
     x_test = np.concatenate(list(x__.values()))
     y_test = np.concatenate(list(y__.values()))
 
-    return x_train, y_train, x_test, y_test
+    return train_keys, test_keys, x_train, y_train, x_test, y_test

@@ -54,7 +54,7 @@ for inner_rate in lr_list:
         rep_model(X_train[0:5])  # Initialise weights
 
         history = metalearning.train_REPTILE_simple(rep_model, (X, y), training_keys=training_keys,
-                                                    epochs=5, lr_inner=inner_rate,
+                                                    epochs=1000, lr_inner=inner_rate,
                                                     batch_size=32, lr_meta=meta_rate)
 
         train_loss = np.array(history['loss'])

@@ -1,5 +1,6 @@
 from skimage import io, data, feature
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import image_processing
 import data_processing
@@ -20,8 +21,11 @@ import data_processing
 #                          "z": MT_truth["z"]})
 
 
-im = io.imread('ThunderSTORM/purePSF_5_MMStack_Pos0.ome.tif')
-test = pd.read_csv('ThunderSTORM/purePSF_5_MMStack_Pos0.ome.csv')
+im = io.imread(
+    '/rds/general/user/rsa14/home/data/z_loc_2020/z_stacks/100nm_blue_1/100nm_blue_1_MMStack_Pos0.ome.tif')
+
+
+# test = pd.read_csv('ThunderSTORM/purePSF_5_MMStack_Pos0.ome.csv')
 # im1 = im[0]
 
 # psfs = data_processing.process_blobs(im1, min_sigma=5, threshold=0.005)
@@ -29,8 +33,10 @@ test = pd.read_csv('ThunderSTORM/purePSF_5_MMStack_Pos0.ome.csv')
 # x_,y_ = data_processing.process_STORM_zstack(im, test, (-1000,1000,40), intensity_threshold= 1000000,
 #                                              bound=16)
 
-x_, y_ = data_processing.process_blob_zstack(im, z_data=(-1000, 1000, 40), threshold=0.005)
+x_, y_ = data_processing.process_blob_zstack(im,
+                                             z_data=(-2000, 2000, 10),
+                                             threshold=0.001)
 
-print(x_.shape, y_.shape)
-io.imshow(x_[0].reshape(32, 32))
-plt.show()
+np.save('psf', x_)
+np.save('pos', y_)
+
