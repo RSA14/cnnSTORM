@@ -27,41 +27,18 @@ random.shuffle(keys)
 training_keys, test_key = keys[0:-1], [keys[-1]]
 print(training_keys, test_key)
 
-X_train = {key: X[key] for key in training_keys}
-X_train = list(X_train.values())
-X_train = np.concatenate(X_train)
 
-y_train = {key: y[key] for key in training_keys}
-y_train = list(y_train.values())
-y_train = np.concatenate(y_train)
 
-X_test = {key: X[key] for key in test_key}
-X_test = list(X_test.values())
-X_test = np.concatenate(X_test)
+rep_model = models.create_DenseModel()
 
-y_test = {key: y[key] for key in test_key}
-y_test = list(y_test.values())
-y_test = np.concatenate(y_test)
+history = metalearning.train_REPTILE_simple(rep_model, (X, y), training_keys=training_keys,
+                                            epochs=1000, lr_inner=0.001,
+                                            batch_size=32, lr_meta=1e-4,
+                                            logging=1, show_plot=False)
 
-lr_list = [1e-3, 1e-4, 1e-5]
-train_losses = np.zeros((1,1000))
-val_losses = np.zeros((1,1000))
+train_loss = np.array(history['loss'])
+val_loss = np.array(history['val_loss'])
 
-for inner_rate in lr_list:
-    for meta_rate in lr_list:
-        rep_model = models.create_DenseModel()
-
-        history = metalearning.train_REPTILE_simple(rep_model, (X, y), training_keys=training_keys,
-                                                    epochs=1000, lr_inner=inner_rate,
-                                                    batch_size=32, lr_meta=meta_rate,
-                                                    logging=50, show_plot=False)
-
-        train_loss = np.array(history['loss'])
-        val_loss = np.array(history['val_loss'])
-
-        train_losses = np.append(train_losses, [train_loss], axis=0)
-        val_losses = np.append(val_losses, [val_loss], axis=0)
-
-np.save('train_losses', train_losses)
-np.save('val_losses', val_losses)
+np.save('train_loss', train_loss)
+np.save('val_loss', val_loss)
 
