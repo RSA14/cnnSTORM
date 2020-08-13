@@ -286,7 +286,8 @@ def train_REPTILE(model: keras.Model, dataset, training_keys,
 
 def train_REPTILE_simple(model: keras.Model, dataset, training_keys,
                          epochs=1, lr_inner=0.01, lr_meta=0.01,
-                         batch_size=32, validation_split=0.2, logging=1, lr_scheduler=None):
+                         batch_size=32, validation_split=0.2, logging=1,
+                         lr_scheduler=None, show_plot=True):
     print("Beginning REPTILE training.")
 
     X_, y_ = dataset
@@ -352,9 +353,10 @@ def train_REPTILE_simple(model: keras.Model, dataset, training_keys,
                 print(f"Epoch {epoch + 1} / {epochs} completed in {time.time() - epoch_start:.2f}s")
                 print(f"Epoch train loss: {_train_loss}, val loss: {_val_loss}")
 
-    plt.plot(epoch_train_losses)
-    plt.plot(epoch_val_losses)
-    plt.show()
+    if show_plot:
+        plt.plot(epoch_train_losses)
+        plt.plot(epoch_val_losses)
+        plt.show()
 
     output = {'loss': epoch_train_losses, 'val_loss': epoch_val_losses}
 
