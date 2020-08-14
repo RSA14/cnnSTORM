@@ -35,7 +35,7 @@ dense_model.compile(optimizer=keras.optimizers.Adam(), loss='mse')
 rep_model = keras.models.load_model('/rds/general/user/rsa14/home/cnnSTORM/saved_models/trained_model_reptile_1000')
 
 
-results = tt.compare_models_finetuned([dense_model, rep_model], (X_, y_), epochs=test_epochs,
+results = tt.compare_models_finetuned([dense_model, rep_model], (X_, y_*10), epochs=test_epochs,
                                       repetitions=100, test_train_split=0.5, batch_size=4)
 
 np.save('results', results)
