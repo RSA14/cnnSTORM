@@ -332,3 +332,19 @@ def process_MATLAB_split_data(data, train_keys_size):
     y_test = np.concatenate(list(y__.values()))
 
     return train_keys, test_keys, x_train, y_train, x_test, y_test
+
+
+def split_test_train(data, split=0.2):
+    X, y = data
+
+    N = X.shape[0]  # No. of samples
+
+    indices = np.random.permutation(N)
+    N_test = int(np.floor((1 - split) * N))
+
+    train_idx, test_idx = indices[:N_test], indices[N_test:]
+
+    X_train, y_train = X[train_idx], y[train_idx]
+    X_test, y_test = X[test_idx], y[test_idx]
+
+    return X_train, y_train, X_test, y_test

@@ -37,11 +37,17 @@ import tensorflow as tf
 #
 # records = trainer.get_metrics(history, show_plot=True, plot_name='smNet.png')
 
-d = {'a': [1, 2, 3, 4, 5], 'b': [1, 2]}
-a = np.array([1,2,3,4,5])
-b = np.array([6,7,8,9,10])
-c = np.array([0.2,0.4,1,2,3])
-dt = np.array([a,b])
-
-np.save('a', a)
-np.save('b', b)
+# d = {'a': [1, 2, 3, 4, 5], 'b': [1, 2]}
+# a = np.array([1,2,3,4,5])
+# b = np.array([6,7,8,9,10])
+# c = np.array([0.2,0.4,1,2,3])
+# dt = np.array([a,b])
+#
+# np.save('a', a)
+# np.save('b', b)
+f = open("setup.txt", "w")
+f.write("yada yada yada, \n"
+        "wtf \n"
+        "and hi \n"
+        "f")
+f.close()
