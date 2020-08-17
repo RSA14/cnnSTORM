@@ -176,6 +176,21 @@ def process_STORM_zstack(image, emitter_positions, z_data, bound=16, y_dims=1,
 
     return x_train, y_train
 
+def process_STORM_test(imagestack, storm_positions:pd.DataFrame, bound=16,
+                        filter_points=True, pixel_size=106, normalise_images=True):
+
+    data = storm_positions[["frame", "x [nm]", "y [nm]"]]
+
+    pixel_x, pixel_y = round(data["x [nm]"] / pixel_size), round(data["y [nm]"] / pixel_size)
+    pixel_locations = pd.DataFrame({'frame': data['frame'], "x": pixel_x, "y": pixel_y})
+
+
+
+
+
+    return
+
+
 
 def process_blobs(image, bound=16, min_sigma=1, max_sigma=50, num_sigma=10, threshold=0.01,
                   overlap=.5, normalise=True):
