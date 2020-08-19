@@ -11,32 +11,50 @@ from keras import backend as keras_backend
 from metalearning_utils import MSE_loss, copy_model, compute_MSE_loss
 import test_tools as tt
 
+dataset = '2_2in51'
+
 f = open("setup.txt", "w")
-f.write("Using acceptable data from blob_processed zstack, only 46 in total \n"
+f.write("Dataset: " + str(dataset))
+f.write("Using all data from blob_processed zstack\n"
         "Test-Train split of 50-50 for a restrictive environment \n"
-        "Comparing trained_model_dense and trained_model_reptile \n"
-        "Testing epochs = np.append([1, 10], np.arange(50,1001, 50))")
+        "Comparing oracle, control, rep and dense \n"
+        "Testing epochs = np.append([1, 10], np.arange(50,1001, 50)), 10 iterations")
+f.close()
 
-acceptable = [126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146,
-              147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167,
-              168, 169, 170, 171]
-
+test_epochs = np.append([1, 10], np.arange(50, 1001, 50))
 X = np.load('/rds/general/user/rsa14/home/blobs/psf.npy')
 y = np.load('/rds/general/user/rsa14/home/blobs/pos.npy')
 
-X_ = X[acceptable]
-y_ = y[acceptable]
+X_train, y_train, X_test, y_test = data_processing.split_test_train((X, y / 100), split=0.5)
+control_model = models.create_DenseModel()
+history_control = trainer.train_model(control_model, x_train=X_train, y_train=y_train,
+                                      optimizer=keras.optimizers.Adam(learning_rate=0.001),
+                                      loss='mse', metrics=None, validation_split=0.2,
+                                      epochs=1000, batch_size=32, summary=False, verbose=0)
 
-test_epochs = np.append([1, 10], np.arange(50, 1001, 50))
+oracle_model = keras.models.load_model('/rds/general/user/rsa14/home/results/oracle_model/model')
 
-dense_model = keras.models.load_model('/rds/general/user/rsa14/home/cnnSTORM/saved_models/trained_model_Dense')
+dense_model = keras.models.load_model('/rds/general/user/rsa14/home/results/' + dataset +
+                                      '/dense_model/model')
+rep_model = keras.models.load_model('/rds/general/user/rsa14/home/results/' + dataset +
+                                    '/rep_model/model')
+
+oracle_model.compile(optimizer=keras.optimizers.Adam(), loss='mse')
+rep_model.compile(optimizer=keras.optimizers.Adam(), loss='mse')
 dense_model.compile(optimizer=keras.optimizers.Adam(), loss='mse')
 
-rep_model = keras.models.load_model('/rds/general/user/rsa14/home/cnnSTORM/saved_models/trained_model_reptile_1000')
+# Pre-trained results:
+oracle_mse = oracle_model.evaluate(X_test, y_test, batch_size=32)
+control_mse = control_model.evaluate(X_test, y_test, batch_size=32)
+rep_mse = rep_model.evaluate(X_test, y_test, batch_size=32)
+dense_mse = dense_model.evaluate(X_test, y_test, batch_size=32)
 
+pretrained_results = np.array([oracle_mse, control_mse, rep_mse, dense_mse])
 
-results = tt.compare_models_finetuned([dense_model, rep_model], (X_, y_/100), epochs=test_epochs,
-                                      repetitions=100, test_train_split=0.5, batch_size=4)
+models = [control_model, rep_model, dense_model]
 
-np.save('results', results)
+results = tt.compare_models_finetuned(models, (X_train, y_train), (X_test, y_test), epochs=test_epochs,
+                                      repetitions=10, batch_size=32)
 
+np.save('finetune_comparison', results)
+np.save('pretrained', pretrained_results)
