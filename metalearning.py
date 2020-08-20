@@ -289,7 +289,8 @@ def train_REPTILE_simple(model: keras.Model, dataset, training_keys,
                          batch_size=32, validation_split=0.2, logging=1,
                          lr_scheduler=None, show_plot=True):
     print("Beginning REPTILE training.")
-
+    model_copy = keras.models.clone_model(model)
+    meta_optimizer = keras.optimizers.Adam(learning_rate=lr_meta)  # Runs faster with optimizer initialised here
     X_, y_ = dataset
 
     epoch_train_losses = []
@@ -302,15 +303,13 @@ def train_REPTILE_simple(model: keras.Model, dataset, training_keys,
         epoch_val_loss = []
 
         if lr_scheduler:
-            lr_inner, lr_meta = lr_scheduler(epoch+1)
-
-        meta_optimizer = keras.optimizers.Adam(learning_rate=lr_meta)
+            lr_inner, lr_meta = lr_scheduler(epoch + 1)
 
         for i, key in enumerate(training_keys):
             # Inner loop for task i, SGD/Adam on the learner model
             _x, _y = X_[key], y_[key]
-            model_copy = keras.models.clone_model(model)
             model_copy.set_weights(model.get_weights())
+            #             model_copy = mlu.copy_model(model, _x)
 
             history = trainer.train_model(model_copy, x_train=_x, y_train=_y,
                                           optimizer=keras.optimizers.Adam(learning_rate=lr_inner),
@@ -319,10 +318,13 @@ def train_REPTILE_simple(model: keras.Model, dataset, training_keys,
 
             # Log losses of each task
             task_train_loss = history.history['loss'][0]
-            task_val_loss = history.history['val_loss'][0]
-
             epoch_train_loss.append(task_train_loss)
-            epoch_val_loss.append(task_val_loss)
+
+            try:
+                task_val_loss = history.history['val_loss'][0]
+                epoch_val_loss.append(task_val_loss)
+            except:
+                pass
 
             # Meta-update step per task phi <- phi + lr_meta*(phi~ - phi)
             updated_weights = []
@@ -331,33 +333,43 @@ def train_REPTILE_simple(model: keras.Model, dataset, training_keys,
             directions = []
 
             for j in range(len(phi)):
-                direction = phi[j] - phi_tilde[j]  # This works whereas flipping this does not!
-                delta = lr_meta * (phi_tilde[j] - phi[j])
+                direction = phi[j] - phi_tilde[j]
+                delta = lr_meta * (phi[j] - phi_tilde[j])
                 new_weight = phi[j] + delta
                 updated_weights.append(new_weight)
                 directions.append(direction)
 
-            # model.set_weights(updated_weights)
+            #             model.set_weights(updated_weights)
+            #             return directions
             meta_optimizer.apply_gradients(zip(directions, model.trainable_variables))
-            del model_copy # Cleanup to save memory?
+        #             del model_copy # Cleanup to save memory?
 
         # Logging overall epoch losses
         _train_loss = np.mean(epoch_train_loss)
-        _val_loss = np.mean(epoch_val_loss)
         epoch_train_losses.append(_train_loss)
-        epoch_val_losses.append(_val_loss)
+        try:
+            _val_loss = np.mean(epoch_val_loss)
+            epoch_val_losses.append(_val_loss)
+        except:
+            pass
 
-        #Logging every logging steps
+        # Logging every logging steps
         if logging:
-            if (epoch+1) % logging == 0:
+            if (epoch + 1) % logging == 0:
                 print(f"Epoch {epoch + 1} / {epochs} completed in {time.time() - epoch_start:.2f}s")
                 print(f"Epoch train loss: {_train_loss}, val loss: {_val_loss}")
 
     if show_plot:
         plt.plot(epoch_train_losses)
-        plt.plot(epoch_val_losses)
+        try:
+            plt.plot(epoch_val_losses)
+        except:
+            pass
         plt.show()
 
-    output = {'loss': epoch_train_losses, 'val_loss': epoch_val_losses}
+    try:
+        output = {'loss': epoch_train_losses, 'val_loss': epoch_val_losses}
+    except:
+        output = {'loss': epoch_train_losses}
 
     return output

@@ -21,7 +21,7 @@ f.write("Using all data from blob_processed zstack\n"
         "Testing epochs = np.append([1, 10], np.arange(50,1001, 50)), 10 iterations")
 f.close()
 
-test_epochs = np.append([1, 10], np.arange(50, 1001, 50))
+test_epochs = list(np.append([1, 10], np.arange(50, 1001, 50)))
 X = np.load('/rds/general/user/rsa14/home/blobs/psf.npy')
 y = np.load('/rds/general/user/rsa14/home/blobs/pos.npy')
 
