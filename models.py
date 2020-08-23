@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from keras import layers, Sequential
+from keras import layers, Sequential, regularizers
 from keras.layers import Conv2D, Flatten, Dense, Add
 
 
@@ -101,6 +101,23 @@ def create_DenseModel():
     densemodel.add(keras.layers.Dense(32, activation=None))
     densemodel.add(keras.layers.ReLU())
     densemodel.add(keras.layers.Dense(1))
+
+    return densemodel
+
+def create_DenseModelB():
+
+    densemodel = keras.Sequential()
+    densemodel.add(keras.layers.Input((32, 32, 1)))
+    densemodel.add(keras.layers.Flatten())
+    densemodel.add(keras.layers.Dense(4096, activation=None, kernel_regularizer=regularizers.l2()))
+    densemodel.add(keras.layers.ReLU())
+    densemodel.add(keras.layers.Dense(4096, activation=None, kernel_regularizer=regularizers.l2()))
+    densemodel.add(keras.layers.ReLU())
+    densemodel.add(keras.layers.Dense(2048, activation=None, kernel_regularizer=regularizers.l2()))
+    densemodel.add(keras.layers.ReLU())
+    densemodel.add(keras.layers.Dense(1024, activation=None, kernel_regularizer=regularizers.l2()))
+    densemodel.add(keras.layers.ReLU())
+    densemodel.add(keras.layers.Dense(1, activation=None, kernel_regularizer=regularizers.l2()))
 
     return densemodel
 
