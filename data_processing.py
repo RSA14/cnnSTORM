@@ -96,7 +96,7 @@ def process_MATLAB_data(psf_path, zpos_path, normalise_images=True):
     zpos = Zpos[list(Zpos.keys())[-1]]
 
     if psf.shape[-1] != zpos.shape[0]:
-        return print("Number of PSFs and number of z-positions are different!")
+        print("Warning: Number of PSFs and number of z-positions are different!")
 
     if normalise_images:
         psf = image_processing.normalise_image(psf)
