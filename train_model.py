@@ -9,13 +9,17 @@ import smNet
 import tensorflow as tf
 import time
 
-datasetIm = 'PSF_2to6_0to1in9_2in51_100.mat'
+datasetIm = ['PSF_2to6_0to1in9_2in101_100_1.mat', 'PSF_2to6_0to1in9_2in101_100_2.mat']
 datasetZ = 'Zpos_2to6_0to1in9_2in51_100.mat'
 model = models.create_DenseModelB()
 checkpoint_filepath = 'model'
+paths = []
 
-X_train, y_train = data_processing.process_MATLAB_data(
-    f'/rds/general/user/rsa14/home/data/Simulated/PSF_toolbox/astig/test/{datasetIm}',
+for path in datasetIm:
+    paths.append(f'/rds/general/user/rsa14/home/data/Simulated/PSF_toolbox/astig/test/{path}')
+
+X_train, y_train = data_processing.process_multiple_MATLAB_data(
+    paths,
     f'/rds/general/user/rsa14/home/data/Simulated/PSF_toolbox/astig/test/{datasetZ}',
     normalise_images=False)
 
@@ -26,7 +30,6 @@ model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     monitor='val_loss',
     mode='min',
     save_best_only=True)
-
 
 start = time.time()
 history_dense = model.fit(X_train, y_train * 10, validation_split=0.2, epochs=1000, batch_size=32, verbose=1,
