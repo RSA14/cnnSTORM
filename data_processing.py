@@ -109,6 +109,17 @@ def process_MATLAB_data(psf_path, zpos_path, normalise_images=True):
 
     return x_train, y_train
 
+def process_multiple_MATLAB_data(psf_paths: list, zpos_path, normalise_images=False):
+    assert isinstance(psf_paths, list), "Only for lists of paths to multiple PSF arrays"
+
+    X_train, y_train = process_MATLAB_data(psf_paths[0], zpos_path, normalise_images=normalise_images)
+
+    for i in range(1, len(psf_paths)):
+        x_, y_ = process_MATLAB_data(psf_paths[i], zpos_path, normalise_images=normalise_images)
+        X_train = np.append(X_train, x_, axis=0)
+
+    return X_train, y_train
+
 
 def process_STORM_zstack(image, emitter_positions, z_data, bound=16, y_dims=1,
                          intensity_threshold=10000, filter_points=True,
