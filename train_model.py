@@ -9,9 +9,10 @@ import smNet
 import tensorflow as tf
 import time
 
-datasetIm = ['PSF_2to6_0to1in9_2in101_100_1.mat', 'PSF_2to6_0to1in9_2in101_100_2.mat']
-datasetZ = 'Zpos_2to6_0to1in9_2in101_100.mat'
-model = models.create_DenseModelB()
+datasetIm = ['PSF_2to6_0to1in9_2in201_100_1.mat', 'PSF_2to6_0to1in9_2in201_100_2.mat',
+             'PSF_2to6_0to1in9_2in201_100_3.mat', 'PSF_2to6_0to1in9_2in201_100_4.mat']
+datasetZ = 'Zpos_2to6_0to1in9_2in201_100.mat'
+model = models.create_DenseModel()
 checkpoint_filepath = 'model'
 paths = []
 
@@ -42,6 +43,6 @@ np.save('train_loss', dense_model_1000_train)
 np.save('val_loss', dense_model_1000_val)
 
 f = open("setup.txt", "w")
-f.write(f"{datasetIm} data")
+f.write(f"{datasetZ} data")
 f.write(str(end - start))
 f.close()
