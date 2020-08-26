@@ -10,7 +10,7 @@ import tensorflow as tf
 import time
 
 datasetIm = ['PSF_2to6_0to1in9_2in101_100_1.mat', 'PSF_2to6_0to1in9_2in101_100_2.mat']
-datasetZ = 'Zpos_2to6_0to1in9_2in51_100.mat'
+datasetZ = 'Zpos_2to6_0to1in9_2in101_100.mat'
 model = models.create_DenseModelB()
 checkpoint_filepath = 'model'
 paths = []

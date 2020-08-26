@@ -287,8 +287,10 @@ def train_REPTILE(model: keras.Model, dataset, training_keys,
 def train_REPTILE_simple(model: keras.Model, dataset, training_keys,
                          epochs=1, lr_inner=0.01, lr_meta=0.01,
                          batch_size=32, validation_split=0.2, logging=1,
+                         stopping_threshold=None, stopping_number=None,
                          lr_scheduler=None, show_plot=True):
     print("Beginning REPTILE training.")
+    stop_counter = 0
     model_copy = keras.models.clone_model(model)
     meta_optimizer = keras.optimizers.Adam(learning_rate=lr_meta)  # Runs faster with optimizer initialised here
     X_, y_ = dataset
@@ -357,7 +359,20 @@ def train_REPTILE_simple(model: keras.Model, dataset, training_keys,
         if logging:
             if (epoch + 1) % logging == 0:
                 print(f"Epoch {epoch + 1} / {epochs} completed in {time.time() - epoch_start:.2f}s")
-                print(f"Epoch train loss: {_train_loss}, val loss: {_val_loss}")
+                try:
+                    print(f"Epoch train loss: {_train_loss}, val loss: {_val_loss}")
+                except:
+                    print(f"Epoch train loss: {_train_loss}")
+
+        if stopping_threshold is not None and len(epoch_train_losses) >= 2:
+            if abs(epoch_train_losses[-1] - epoch_train_losses[-2]) < stopping_threshold:
+                stop_counter += 1
+            else:
+                stop_counter = 0  # Reset stop counter
+
+        if stop_counter >= stopping_number:
+            print(f"No significant change in training loss for {stopping_number} epochs.")
+            break  # Exit training early
 
     if show_plot:
         plt.plot(epoch_train_losses)
